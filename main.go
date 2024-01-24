@@ -23,10 +23,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	pg_user := os.Getenv("PG_USER")
-	pg_pass := os.Getenv("PG_PASS")
-	pg_port := os.Getenv("PG_PORT")
-	pg_db_name := os.Getenv("PG_DB_NAME")
+	// pg_user := os.Getenv("PG_USER")
+	// pg_pass := os.Getenv("PG_PASS")
+	// pg_port := os.Getenv("PG_PORT")
+	// pg_db_name := os.Getenv("PG_DB_NAME")
+	pg_user, pg_pass, pg_port, pg_db_name := os.Getenv("PG_USER"), os.Getenv("PG_PASS"), os.Getenv("PG_PORT"), os.Getenv("PG_DB_NAME")
 
 	variable := fmt.Sprintf("postgres://%v:%v@localhost:%v/%v?sslmode=disable", pg_user, pg_pass, pg_port, pg_db_name)
 	connStr := variable
@@ -43,10 +44,15 @@ func main() {
 
 	createProductTable(db)
 
-	product := Product{"LootBox - 100x", 1999.99, false}
-	prod_id := insertProduct(db, product)
+	// product := Product{"LootBox - 1000x", 999.99, false}
+	// prod_id := insertProduct(db, product)
 
-	fmt.Printf("ID = %d\n", prod_id)
+	// fmt.Printf("ID = %d\n", prod_id)
+
+	name, price, available := getProduct(db, 111)
+	fmt.Printf("Name: %v\n", name)
+	fmt.Printf("Price: %v\n", price)
+	fmt.Printf("Availability: %v\n", available)
 }
 
 func createProductTable(db *sql.DB)  {
@@ -75,4 +81,24 @@ func insertProduct(db *sql.DB, product Product) int {
 		log.Fatal(err)
 	}
 	return product_id
+}
+
+func getProduct(db *sql.DB, id int) (string, float64, bool) {
+	var name string
+	var price float64
+	var available bool
+	
+	query := `SELECT name, price, available FROM product WHERE id = $1`
+	err := db.QueryRow(query, id).Scan(&name, &price, &available)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Fatalf("No rows found with ID %d", id)
+		}
+		log.Fatal(err)
+	}
+	return name, price, available
+}
+
+func getProducts(db *sql.DB) {
+
 }

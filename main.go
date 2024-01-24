@@ -49,10 +49,16 @@ func main() {
 
 	// fmt.Printf("ID = %d\n", prod_id)
 
-	name, price, available := getProduct(db, 111)
-	fmt.Printf("Name: %v\n", name)
-	fmt.Printf("Price: %v\n", price)
-	fmt.Printf("Availability: %v\n", available)
+	// name, price, available := getProduct(db, 111)
+	// fmt.Printf("Name: %v\n", name)
+	// fmt.Printf("Price: %v\n", price)
+	// fmt.Printf("Availability: %v\n", available)
+
+	data := getProducts(db)
+
+	for i, s := range data {
+		fmt.Printf("ID: %v\nName: %v\nPrice: %v\nAvailable: %v\n", i, s.Name, s.Price, s.Available)
+	}
 }
 
 func createProductTable(db *sql.DB)  {
@@ -99,6 +105,25 @@ func getProduct(db *sql.DB, id int) (string, float64, bool) {
 	return name, price, available
 }
 
-func getProducts(db *sql.DB) {
+func getProducts(db *sql.DB) []Product {
+	var data []Product
+	var name string
+	var price float64
+	var available bool
 
+	rows, err := db.Query("SELECT name, price, available FROM product")
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	for rows.Next() {
+		err := rows.Scan(&name, &price, &available)
+		if err != nil {
+			log.Fatal(err)
+		}
+		data = append(data, Product{name, price, available})
+	}
+
+	defer rows.Close()
+	return data
 }
